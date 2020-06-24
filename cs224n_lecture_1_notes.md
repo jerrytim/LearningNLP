@@ -25,7 +25,7 @@ We have prediction function (softmax function):
 $$P(o|c) = \frac{exp(u_{o}^Tv_{c})}{\sum_{w \in v}exp(u_{w}^Tv_{c})}$$
 Compute gradients:
 $$ TBD \\ \frac{\partial}{\partial V_c} = log p(o|c) = u_o - \sum_{x=1}^V p(x|c) u_x \\ TBD$$
-Questions so far:
+Questions so far:  
 	1. What's the logic of using softmax representation to calculate $P(w_{t+j} | w_{t};\theta)$?  
 	2. Prof. Manning mentioned that the second part of $\frac{\partial}{\partial V_c}$, $\sum_{x=1}^V p(x|c) u_x$, is deemed as an expectation, it's weighted average of the representation of each word multiply by the probability of it in current model, I'm not clear of this yet.
 
