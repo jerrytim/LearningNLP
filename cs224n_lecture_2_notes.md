@@ -1,33 +1,23 @@
 # CS224N Winter 2019
-## Lecture 2
+## Lecture 2: Word Vectors and Word Senses
 
-### Word representation
-#### One-hot Vectors
-In traditional NLP, words is represented by one-hot vectors:
-```python
-motel = np.array([0, 0, 0, 1, 0])
-hotel = np.array([0, 0, 1, 0, 0])
-```
-But these two vectors are orthogonal, there's no way to measure similarity.
+### Negative Sampling
+Main idea: train binary logistic regressions for a true pair (center word and word in its context window) versus several noise pairs (the center word paired with a random word).
 
-#### Word2Vec
-Distributed representation.
-
-For each position $t =1, ..., T$, predict context words within a window of fixed size m, given center word $w_j$.
-Objective function
-$$J(\theta) = -\frac{1}{T}log L(\theta) = -\frac{1}{T}\sum_{t=1}^T\sum_{-m \le j \le m, \ j\ne 0} log P(w_{t+j} | w_{t};\theta)
+### Skip-gram model with Negative Sampling
+Maximize probability that real outside word appears, minimize probability that random words appear
+$$J(\theta) = \frac{1}{T}\sum_{t=1}^TJ_t(\theta)
+\\ \max J_t(\theta) = log\sigma(u_{o}^Tv_{c}) + \sum_{i=1}^k \mathbb E_{j \sim P(w)} [log\sigma(-u_{j}^Tv_{c})]
+\\ \min J_{neg-sample}(o, v_c, U) = -log\sigma(u_{o}^Tv_{c}) - \sum_{k=1}^klog\sigma(-u_{k}^Tv_{c})
+\\ \sigma(x) \ \text{is a sigmoid function}, P(w) \ \text{represents a unigram distribution}
 $$
-To calculate $P(w_{t+j} | w_{t};\theta)$, we propose 2 vectors per word $w$:  
-	- $v_{w}$ when $w$ is a center word  
-	- $u_{w}$ when $w$ is a context word  
-	- Average both at the end  
-We have prediction function (softmax function):
-$$P(o|c) = \frac{exp(u_{o}^Tv_{c})}{\sum_{w \in v}exp(u_{w}^Tv_{c})}$$
-Compute gradients:
-$$ TBD \\ \frac{\partial}{\partial V_c} = log p(o|c) = u_o - \sum_{x=1}^V p(x|c) u_x \\ TBD$$
-Questions so far:  
-	1. What's the logic of using softmax representation to calculate $P(w_{t+j} | w_{t};\theta)$?  
-	2. Prof. Manning mentioned that the second part of $\frac{\partial}{\partial V_c}$, $\sum_{x=1}^V p(x|c) u_x$, is deemed as an expectation, it's weighted average of the representation of each word multiply by the probability of it in current model, I'm not clear of this yet.
+question: how to exactly convert maximize cost function to minimize cost function, especially the second part? $E_{j \sim P(w)} [log\sigma(-u_{j}^Tv_{c})]$ is an expectation, in minimize cost function formula, we can change the sigmoid function to $1-\sigma(x)$, but still not sure how the expectation goes away.
 
-### Word2Vec Implementation (WIP)
-[Jupyter Notebook](https://github.com/jerrytim/LearningNLP/blob/master/word2vec.ipynb)
+### GloVe Model
+Ratios of co-occurrence probabilities can encode meaning components
+To capture ratios of co-occurrence probabilities as linear meaning components in a word vector space, let
+$$ \text{log-bilinear model} \ w_i \cdot w_j = log P(i|j)
+\\ \text{with vector differences} \ w_x \cdot (w_a - w_b)  = log \frac{P(x|a)}{P(x|b)}
+\\ J= \sum_{i,j=1}^V f(X_{ij}) (w_i^T\tilde w_j + b_j + \tilde b_j - log X_{ij})^2
+$$
+make dot product of $w_i \cdot w_j$ as close as co-occurrence probabilities $log P(i|j)$
